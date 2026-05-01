@@ -51,8 +51,10 @@ pi.write(G2, 1)
 pi.write(B2, 1)
 
 # FONCTIONS
+compteur = 0
 def set_max_limitation():
     pass
+    
 
 def set_rgbs(r1,g1,b1,r2,g2,b2):
     # set_PWM_dutycycle()
@@ -70,13 +72,28 @@ def set_rgbs(r1,g1,b1,r2,g2,b2):
 def bonjour():
     return "<h1>Bonjour le monde!</h1>"
 
+@app.route('/rgb', methods=['POST'])
+def set_rgb():
+    if request.method == "POST":
+        json_data = request.get_json()
+        if "etat" in json_data:
+            if json_data["etat"] == "on":
+                pi.write(R1, 1)
+                pi.write(G1, 0)
+                pi.write(B1, 1)
+            elif json_data["etat"] == "off":
+                pi.write(R1, 0)
+                pi.write(G1, 1)
+                pi.write(B1, 1)
+            else:
+                return jsonify({'Erreur': 'Mauvaise valeur'}), 500
+        else:
+            return jsonify({'Erreur': 'Mauvais attribut'}), 500
+    else:
+        return jsonify({'Erreur': 'Requetes POST seulement'}), 500
 
-@app.route('/',methods=['POST'])
-def bonjour():
-    return "<h1>Bonjour le monde!</h1>"
-
-
+    return jsonify({'Etat': json_data["etat"]}), 200
 
 # MAIN
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=3000)
+    app.run(host='0.0.0.0',port=5000)

@@ -5,4 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PurrBox</title>
 </head>
+<body>
+    <div class="container">
+        <button id="powerBtn" value="off" onclick="activerPower()">Power</button>
+        <div id="status"></div>
+    </div>
+
+
+    <script>
+            function activerPower() {
+                const powerBtn = document.getElementById('powerBtn');
+                const currentState = powerBtn.value;
+    
+                if (currentState === 'off') {
+                    powerBtn.value = 'on';
+                    powerBtn.textContent = 'FeedNow';
+                    commande('on');
+                } else {
+                    powerBtn.value = 'off';
+                    powerBtn.textContent = 'LaterKitty';
+                    commande('off');
+                }
+            }
+        async function commande(etat) {
+            const statusDiv = document.getElementById('status');
+            try {
+                const response = await fetch('http://10.10.21.160:5000/rgb', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ etat: etat })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    statusDiv.textContent = `Erreur: ${data.Erreur || 'Erreur inconnue'}`;
+                    statusDiv.style.color = 'red';
+                } else {
+                    statusDiv.textContent = `Rgb est a ${etat}`;
+                    statusDiv.style.color = 'green';
+                }
+            } catch (error) {
+                statusDiv.textContent = `Erreur: ${error.message}`;
+                statusDiv.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+
 </html>
