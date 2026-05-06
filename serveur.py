@@ -31,6 +31,7 @@ etat = {
     "dernier_message": None,
     "nb_distributions": 0,
     "nb_tentatives": 0,
+    "actif": False,
 }
 
 # FONCTIONS
@@ -46,9 +47,16 @@ def creer_socket():
             ligne, buffer = buffer.split("\n", 1)
             ligne = ligne.strip()
             if ligne:
-                print(f"Reçu: {ligne} cm")
-                etat["derniere_distance"] = float(ligne)
-                etat["dernier_message"] = ligne
+                if ligne == "POWER_ON":
+                    etat["actif"] = True
+                    print("Système activé")
+                elif ligne == "POWER_OFF":
+                    etat["actif"] = False
+                    print("Système désactivé")
+                else:
+                    print(f"Reçu: {ligne} cm")
+                    etat["derniere_distance"] = float(ligne)
+                    etat["dernier_message"] = ligne
  
 # ROUTES
 @app.route('/')
@@ -58,35 +66,32 @@ def home():
 @app.route('/api/status', methods=['GET'])
 def api_status():
     return jsonify(etat)
- 
-@app.route('/rgb', methods=['POST'])
-def set_rgb():
-    if request.method == "POST":
-        json_data = request.get_json()
-        if "etat" in json_data:
-            if json_data["etat"] == "on":
-                pass
-                # pi.write(R, 1)
-                # pi.write(G, 0)
-                # pi.write(B, 1)
-               
-                # va être envoyé par le client
-                # lecture_distance()
-            elif json_data["etat"] == "off":
-                pass
-                # pi.write(R, 0)
-                # pi.write(G, 1)
-                # pi.write(B, 1)
-            else:
-                return jsonify({'Erreur': 'Mauvaise valeur'}), 500
-        else:
-            return jsonify({'Erreur': 'Mauvais attribut'}), 500
+
+@app.route('/api/power', methods=['POST'])
+def api_power():
+    json_data = request.get_json()
+    if not json_data or "etat" not in json_data:
+        return jsonify({'Erreur': 'Mauvais attribut'}), 400
+    if json_data["etat"] == "on":
+        etat["actif"] = True
+    elif json_data["etat"] == "off":
+        etat["actif"] = False
     else:
-        return jsonify({'Erreur': 'Requetes POST seulement'}), 500
- 
-    return jsonify({'Succes': 'ok'}), 200
- 
- 
+        return jsonify({'Erreur': 'Mauvaise valeur'}), 400
+    return jsonify({'actif': etat["actif"]}), 200
+
+@app.route('/api/rgb', methods=['POST'])
+def api_rgb():
+    json_data = request.get_json()
+    if not json_data or "etat" not in json_data:
+        return jsonify({'Erreur': 'Mauvais attribut'}), 400
+    if json_data["etat"] in ("on", "off"):
+        etat["actif"] = json_data["etat"] == "on"
+    else:
+        return jsonify({'Erreur': 'Mauvaise valeur'}), 400
+    return jsonify({'actif': etat["actif"]}), 200
+
+
 # INITIALISATION DES THREADS
 # thread_logique_materielle = threading.Thread(target=logique_materielle, daemon=True)
 thread_creer_socket = threading.Thread(target=creer_socket, daemon=True)

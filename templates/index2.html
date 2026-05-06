@@ -46,6 +46,13 @@
       border-left: 4px solid #c08adc;
     }
 
+    .chat {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
     .carte h2 {
       font-size: 16px;
       color: #6b3a8a;
@@ -59,6 +66,7 @@
       padding: 6px 0;
       font-size: 15px;
     }
+  
     .ligne .valeur {
       font-weight: 600;
       color: #a04bbf;
@@ -72,8 +80,26 @@
       margin-right: 6px;
       background: #ccc;
     }
-    .statut-pastille.ok    { background: #4caf50; }
-    .statut-pastille.erreur{ background: #f44336; }
+    .statut-pastille-ok    {       
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      background: #86efac; 
+      box-shadow: 0 0 0 3px rgba(134,239,172,0.3);
+      animation: pulse 2s infinite;
+    }
+    .statut-pastille-erreur{       
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      background: #fca5a5; 
+      box-shadow: 0 0 0 3px rgba(252,165,165,0.3); 
+      animation: none;
+    }
 
     .bouton {
       width: 100%;
@@ -122,7 +148,14 @@
 <body>
   <div class="container">
     <h1>🐾 PurrBox</h1>
-    <p class="sous-titre">Distributeur de nourriture pour chats</p>
+    <p class="sous-titre">Distributeur de gâteries pour chats</p>
+
+        <!-- ================ PHOTO ================ -->
+        <div class="carte">
+          <div class="ligne">
+            <img class="chat" src="/PurrBox/assets/Mochi.png" alt="Photo du chat de l'une des développeuses">
+          </div>
+        </div>
 
     <!-- ============= ÉTAT ACTUEL ============= -->
     <div class="carte">
@@ -169,7 +202,7 @@
     <div class="carte">
       <h2>Réglages</h2>
       <div class="reglage">
-        <label for="max-limit">Limite max par distribution :</label>
+        <label for="max-limit">Limite maximale de distribution par jour :</label>
         <input id="max-limit" type="number" min="1" max="10" value="3" />
       </div>
       <button id="bouton-reglage" class="bouton">Enregistrer</button>
@@ -189,9 +222,9 @@
         const e   = await rep.json();
 
         document.getElementById("connexion").textContent =
-            e.dernier_message ? "Actif" : "Aucun signal";
+            e.actif ? "Actif" : "Aucun signal";
         document.getElementById("pastille").className =
-            "statut-pastille " + (e.dernier_message ? "ok" : "erreur");
+            "statut-pastille-" + (e.actif ? "ok" : "erreur");
 
         document.getElementById("distance").textContent =
             (e.derniere_distance ?? "--") + " cm";
@@ -256,7 +289,7 @@
 
     // Rafraîchissement automatique toutes les 2 secondes
     rafraichirEtat();
-    setInterval(rafraichirEtat, 2000);
+    setInterval(rafraichirEtat, 500);
   </script>
 </body>
 </html>
