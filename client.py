@@ -3,10 +3,9 @@ import time
 import socket
 import threading
 
-PORT = 5000
-# DEST_IP = "192.168.13.1"
-DEST_IP = "127.0.0.1"
-MESSAGE = "abcdefg!\n"
+PORT = 5008
+DEST_IP = "192.168.13.1"
+# DEST_IP = "127.0.0.1"
 
 
 # CONSTANTES
@@ -50,7 +49,6 @@ pi.set_mode(M4,pigpio.OUTPUT)
 
 # Bouton
 pi.set_mode(BTN, pigpio.INPUT)
-pi.set_pull_up_down(BTN, pigpio.PUD_UP)
 
 # Initialisation des RGB éteintes
 # RGB 
@@ -70,7 +68,6 @@ seq_half = [
 ]
 
 # FONCTIONS
-
 
 def degree_to_steps(angle):
     return angle / 360 * 2048
@@ -103,7 +100,9 @@ def lecture_distance():
 
 
 def actionner_moteur(nb_portions):
+    steps = STEPS_PAR_TOUR // 16
     for i in range(int(nb_portions)):
+      for i in range(steps):
         for step in seq_half:
             pi.write(M1, step[0])
             pi.write(M2, step[1])
@@ -151,11 +150,22 @@ def gerer_bouton(sock):
                     print(f"Système {'activé' if systeme_actif else 'désactivé'}")
         time.sleep(0.02)
 
+def gerer_distribution(sock):
+    while True:
+        data = sock.recv(1024).decode().strip()
+        if not data:
+            continue
+        if data.startswith("FEED:"):
+            portions = int(data.split(":")[1])
+            print(f"Commande reçue : {portions} portion(s)")
+            actionner_moteur(portions)
+
 # MAIN
 if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((DEST_IP, PORT))
     threading.Thread(target=gerer_bouton, args=(sock,), daemon=True).start()
+    threading.Thread(target=gerer_distribution, args=(sock,), daemon=True).start()
     try:
         while True:
             if systeme_actif:

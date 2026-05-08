@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PurrBox - Distributeur de nourriture</title>
   <style>
-    /* ============= STYLE ============= */
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -25,18 +25,8 @@
       box-shadow: 0 10px 30px rgba(180, 130, 200, 0.25);
     }
 
-    h1 {
-      text-align: center;
-      color: #a04bbf;
-      margin-bottom: 4px;
-      font-size: 28px;
-    }
-    .sous-titre {
-      text-align: center;
-      color: #888;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
+    h1 { text-align: center; color: #a04bbf; margin-bottom: 4px; font-size: 28px; }
+    .sous-titre { text-align: center; color: #888; font-size: 14px; margin-bottom: 24px; }
 
     .carte {
       background: #faf5ff;
@@ -46,18 +36,23 @@
       border-left: 4px solid #c08adc;
     }
 
-    .chat {
-      width: 100%;
-      height: 350px;
-      object-fit: cover;
-      border-radius: 10px;
+    .carte-alerte {
+      background: #fff8e1;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-left: 4px solid #ffb300;
+      display: none;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #e65100;
     }
+    .carte-alerte.visible { display: block; }
 
-    .carte h2 {
-      font-size: 16px;
-      color: #6b3a8a;
-      margin-bottom: 10px;
-    }
+    .chat { width: 100%; height: 350px; object-fit: cover; border-radius: 10px; }
+
+    .carte h2 { font-size: 16px; color: #6b3a8a; margin-bottom: 10px; }
 
     .ligne {
       display: flex;
@@ -66,40 +61,11 @@
       padding: 6px 0;
       font-size: 15px;
     }
-  
-    .ligne .valeur {
-      font-weight: 600;
-      color: #a04bbf;
-    }
+    .ligne .valeur { font-weight: 600; color: #a04bbf; }
 
-    .statut-pastille {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-      background: #ccc;
-    }
-    .statut-pastille-ok    {       
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-      background: #86efac; 
-      box-shadow: 0 0 0 3px rgba(134,239,172,0.3);
-      animation: pulse 2s infinite;
-    }
-    .statut-pastille-erreur{       
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-      background: #fca5a5; 
-      box-shadow: 0 0 0 3px rgba(252,165,165,0.3); 
-      animation: none;
-    }
+    .statut-pastille { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #ccc; }
+    .statut-pastille-ok { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #86efac; box-shadow: 0 0 0 3px rgba(134,239,172,0.3); }
+    .statut-pastille-erreur { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: #fca5a5; box-shadow: 0 0 0 3px rgba(252,165,165,0.3); }
 
     .bouton {
       width: 100%;
@@ -117,12 +83,7 @@
     .bouton:active { transform: scale(0.97); }
     .bouton:disabled { background: #ccc; cursor: not-allowed; }
 
-    .reglage {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-    }
+    .reglage { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
     .reglage label { flex: 1; font-size: 15px; }
     .reglage input {
       width: 60px;
@@ -133,35 +94,34 @@
       text-align: center;
     }
 
-    .message {
-      text-align: center;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 10px;
-      font-size: 14px;
-      display: none;
-    }
-    .message.ok    { background: #e8f5e9; color: #2e7d32; display: block; }
-    .message.erreur{ background: #ffebee; color: #c62828; display: block; }
+    .message { text-align: center; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; display: none; }
+    .message.ok { background: #e8f5e9; color: #2e7d32; display: block; }
+    .message.erreur { background: #ffebee; color: #c62828; display: block; }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🐾 PurrBox</h1>
     <p class="sous-titre">Distributeur de gâteries pour chats</p>
 
-        <!-- ================ PHOTO ================ -->
-        <div class="carte">
-          <div class="ligne">
-            <img class="chat" src="/PurrBox/assets/Mochi.png" alt="Photo du chat de l'une des développeuses">
-          </div>
-        </div>
+    <!-- ================ PHOTO ================ -->
+    <div class="carte">
+      <div class="ligne">
+        <img class="chat" src="/static/Mochi.png" alt="Photo du chat"/>
+      </div>
+    </div>
+
+    <!-- ================ ALERTE CHAT ================ -->
+    <div id="alerte-chat" class="carte-alerte">
+      Mochi est là !
+    </div>
 
     <!-- ============= ÉTAT ACTUEL ============= -->
     <div class="carte">
       <h2>État du distributeur</h2>
       <div class="ligne">
-        <span><span id="pastille" class="statut-pastille"></span>Connexion</span>
+        <span id="pastille" class="statut-pastille"></span><span>Connexion</span>
         <span id="connexion" class="valeur">--</span>
       </div>
       <div class="ligne">
@@ -194,54 +154,39 @@
         <label for="portions">Nombre de portions :</label>
         <input id="portions" type="number" min="1" max="10" value="1" />
       </div>
-      <button id="bouton-feed" class="bouton">🍽️ Distribuer</button>
+      <button id="bouton-feed" class="bouton">Distribuer</button>
       <div id="message-feed" class="message"></div>
     </div>
 
-    <!-- ============= RÉGLAGES ============= -->
-    <div class="carte">
-      <h2>Réglages</h2>
-      <div class="reglage">
-        <label for="max-limit">Limite maximale de distribution par jour :</label>
-        <input id="max-limit" type="number" min="1" max="10" value="3" />
-      </div>
-      <button id="bouton-reglage" class="bouton">Enregistrer</button>
-    </div>
   </div>
 
   <script>
-    // ============= JAVASCRIPT =============
-
-    /**
-     * Récupère l'état actuel du distributeur depuis le serveur
-     * et met à jour l'affichage.
-     */
     async function rafraichirEtat() {
       try {
-        const rep = await fetch("http://127.0.0.1:5001/api/status");
-        const e   = await rep.json();
+        const rep = await fetch("http://192.168.13.1:5000/api/status");
+        const e = await rep.json();
 
-        document.getElementById("connexion").textContent =
-            e.actif ? "Actif" : "Aucun signal";
-        document.getElementById("pastille").className =
-            "statut-pastille-" + (e.actif ? "ok" : "erreur");
-
-        document.getElementById("distance").textContent =
-            (e.derniere_distance ?? "--") + " cm";
-        document.getElementById("dernier-message").textContent =
-            e.dernier_message ?? "--";
+        document.getElementById("connexion").textContent = e.actif ? "Actif" : "Aucun signal";
+        document.getElementById("pastille").className = "statut-pastille-" + (e.actif ? "ok" : "erreur");
+        document.getElementById("distance").textContent = (e.derniere_distance ?? "--") + " cm";
+        document.getElementById("dernier-message").textContent = e.dernier_message ?? "--";
         document.getElementById("nb-distributions").textContent = e.nb_distributions;
-        document.getElementById("nb-tentatives").textContent    = e.nb_tentatives;
+        document.getElementById("nb-tentatives").textContent = e.nb_tentatives;
+
+        const alerte = document.getElementById("alerte-chat");
+        if ((e.derniere_distance !== null) ) {
+          alerte.classList.add("visible");
+        } else {
+          alerte.classList.remove("visible");
+        }
+
       } catch (err) {
         console.error("Erreur rafraîchissement :", err);
       }
     }
 
-    /**
-     * Demande au serveur de distribuer la nourriture.
-     */
     async function distribuer() {
-      const bouton  = document.getElementById("bouton-feed");
+      const bouton = document.getElementById("bouton-feed");
       const message = document.getElementById("message-feed");
       const portions = parseInt(document.getElementById("portions").value, 10) || 1;
 
@@ -250,7 +195,7 @@
       message.textContent = "";
 
       try {
-        const rep = await fetch("http://127.0.0.1:5001/api/feed", {
+        const rep = await fetch("http://192.168.13.1:5000/api/feed", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portions: portions }),
@@ -266,30 +211,11 @@
       setTimeout(() => { bouton.disabled = false; }, 2000);
     }
 
-    /**
-     * Enregistre la nouvelle limite max sur le serveur.
-     */
-    async function enregistrerReglage() {
-      const max = parseInt(document.getElementById("max-limit").value, 10) || 3;
-      try {
-        await fetch("http://127.0.0.1:5001/api/reglages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ max_limitation: max }),
-        });
-        alert("Réglage enregistré !");
-      } catch (err) {
-        alert("Erreur lors de l'enregistrement.");
-      }
-    }
-
-    // Événements des boutons
     document.getElementById("bouton-feed").addEventListener("click", distribuer);
-    document.getElementById("bouton-reglage").addEventListener("click", enregistrerReglage);
 
-    // Rafraîchissement automatique toutes les 2 secondes
     rafraichirEtat();
     setInterval(rafraichirEtat, 500);
   </script>
 </body>
+
 </html>
