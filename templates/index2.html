@@ -50,8 +50,14 @@
     }
     .carte-alerte.visible { display: block; }
 
-    .chat { width: 100%; height: 350px; object-fit: cover; border-radius: 10px; }
+    .chat { width: 100%; height: 350px; background-image: url("/static/Mochi.png"); background-repeat: no-repeat; background-size: contain; border-radius: 10px; }
 
+     @media only screen and (max-width: 480px) {
+      .chat {
+        width: 100%; height: 250px; background-image: url("/static/Mochi.png"); background-repeat: no-repeat; background-size: contain; border-radius: 10px; 
+
+      }
+    } 
     .carte h2 { font-size: 16px; color: #6b3a8a; margin-bottom: 10px; }
 
     .ligne {
@@ -97,29 +103,6 @@
     .message { text-align: center; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; display: none; }
     .message.ok { background: #e8f5e9; color: #2e7d32; display: block; }
     .message.erreur { background: #ffebee; color: #c62828; display: block; }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 999;
-      justify-content: center;
-      align-items: center;
-    }
-    .overlay.visible { display: flex; }
-    
-    .popup {
-      background: #fff;
-      border-radius: 20px;
-      padding: 30px 24px;
-      text-align: center;
-      max-width: 320px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    }
-    .popup h2 { color: #e65100; margin-bottom: 12px; }
-    .popup p { color: #555; margin-bottom: 20px; font-size: 15px; }    
   </style>
 </head>
 
@@ -131,7 +114,8 @@
     <!-- ================ PHOTO ================ -->
     <div class="carte">
       <div class="ligne">
-        <img class="chat" src="/static/Mochi.png" alt="Photo du chat"/>
+        <div class="chat"></div>
+        <!-- <img class="chat" src="/static/Mochi.png" alt="Photo du chat"> -->
       </div>
     </div>
 
@@ -144,7 +128,7 @@
     <div class="carte">
       <h2>État du distributeur</h2>
       <div class="ligne">
-        <span id="pastille" class="statut-pastille"></span><span>Connexion</span>
+        <span><span id="pastille" class="statut-pastille"></span>Connexion</span>
         <span id="connexion" class="valeur">--</span>
       </div>
       <div class="ligne">
@@ -181,52 +165,33 @@
       <div id="message-feed" class="message"></div>
     </div>
 
-    <!-- ============= POPUP RÉSERVOIR ============= -->
-<div id="overlay-reservoir" class="overlay">
-  <div class="popup">
-    <h2> Réservoir vide !</h2>
-    <p>Le réservoir a atteint 4 distributions.
-        Veuillez le remplir avant de continuer.</p>
-    <button class="bouton" onclick="resetReservoir()">OK, c'est rempli !</button>
   </div>
-</div>
 
   <script>
     async function rafraichirEtat() {
       try {
-        const rep = await fetch("http://192.168.13.1:5000/api/status");
+        const rep = await fetch("/api/status");
         const e = await rep.json();
-    
+
         document.getElementById("connexion").textContent = e.actif ? "Actif" : "Aucun signal";
         document.getElementById("pastille").className = "statut-pastille-" + (e.actif ? "ok" : "erreur");
         document.getElementById("distance").textContent = (e.derniere_distance ?? "--") + " cm";
         document.getElementById("dernier-message").textContent = e.dernier_message ?? "--";
         document.getElementById("nb-distributions").textContent = e.nb_distributions;
         document.getElementById("nb-tentatives").textContent = e.nb_tentatives;
-    
-        // Alerte Mochi — apparaît si <= 15 cm, disparaît si > 15 cm
+
         const alerte = document.getElementById("alerte-chat");
         if (e.derniere_distance !== null && e.derniere_distance <= 15) {
           alerte.classList.add("visible");
         } else {
           alerte.classList.remove("visible");
         }
-    
-        // Popup réservoir vide
-        const overlay = document.getElementById("overlay-reservoir");
-        if (!e.reservoir_plein) {
-          overlay.classList.add("visible");
-        }
-    
+
       } catch (err) {
         console.error("Erreur rafraîchissement :", err);
       }
     }
-    
-    async function resetReservoir() {
-      await fetch("http://192.168.13.1:5000/api/reset_reservoir", { method: "POST" });
-      document.getElementById("overlay-reservoir").classList.remove("visible");
-    }
+
     async function distribuer() {
       const bouton = document.getElementById("bouton-feed");
       const message = document.getElementById("message-feed");
@@ -237,17 +202,17 @@
       message.textContent = "";
 
       try {
-        const rep = await fetch("http://192.168.13.1:5000/api/feed", {
+        const rep = await fetch("/api/feed", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portions: portions }),
         });
         const r = await rep.json();
         message.className = "message ok";
-        message.textContent = `✅ Commande envoyée (${r.portions} portion(s)).`;
+        message.textContent = `Commande envoyée (${r.portions} portion(s)).`;
       } catch (err) {
         message.className = "message erreur";
-        message.textContent = "❌ Erreur d'envoi.";
+        message.textContent = "Erreur d'envoi.";
       }
 
       setTimeout(() => { bouton.disabled = false; }, 2000);
