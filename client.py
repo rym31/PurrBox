@@ -146,7 +146,11 @@ def gerer_bouton(sock):
                     systeme_actif = not systeme_actif
                     set_rgb_etat(systeme_actif)
                     msg = "POWER_ON" if systeme_actif else "POWER_OFF"
-                    sock.send(f"{msg}\n".encode())
+                    try:
+                        sock.send(f"{msg}\n".encode())
+                    except Exception as e:
+                        print(f"Erreur envoi bouton : {e}")
+                        return
                     print(f"Système {'activé' if systeme_actif else 'désactivé'}")
         time.sleep(0.02)
 
@@ -162,22 +166,28 @@ def gerer_distribution(sock):
 
 # MAIN
 if __name__ == '__main__':
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((DEST_IP, PORT))
-    threading.Thread(target=gerer_bouton, args=(sock,), daemon=True).start()
-    threading.Thread(target=gerer_distribution, args=(sock,), daemon=True).start()
-    try:
-        while True:
-            if systeme_actif:
-                dist = lecture_distance()
-                if dist <= 100:
-                    print(f"dist:{dist} cm")
-                    sock.send(f"{dist}\n".encode())
-                else:
-                    print("Trop loin")
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        sock.close()
-
+    while True:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((DEST_IP, PORT))
+            print("Connecté au serveur")
+            threading.Thread(target=gerer_bouton, args=(sock,), daemon=True).start()
+            threading.Thread(target=gerer_distribution, args=(sock,), daemon=True).start()
+            while True:
+                if systeme_actif:
+                    dist = lecture_distance()
+                    if dist <= 100:
+                        print(f"dist:{dist} cm")
+                        try:
+                            sock.send(f"{dist}\n".encode())
+                        except Exception as e:
+                            print(f"Erreur envoi distance : {e}")
+                            break
+                    else:
+                        print("Trop loin")
+                time.sleep(0.5)
+        except Exception as e:
+            print(f"Connexion perdue, reconnexion dans 10s : {e}")
+            time.sleep(10)
+        finally:
+            sock.close()
